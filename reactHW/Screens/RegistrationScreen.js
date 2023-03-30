@@ -323,7 +323,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#FF6C00",
     borderColor: "transparent",
-    paddingVertical: 16,
+    paddingVertical: 10,
     paddingHorizontal: 32,
   },
   btnTitle: {
