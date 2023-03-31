@@ -227,28 +227,34 @@ export default function RegistrationScreen() {
                 </View>
               </View>
             </KeyboardAvoidingView>
-            <TouchableOpacity
-              activeOpacity={0.8}
+            <View
               style={{
-                ...styles.btn,
-                display: isKeyboardVisible ? "none" : "flex",
+                width: dimensions,
               }}
-              onPress={formSubmit}
             >
-              <Text style={styles.btnTitle}>Зарегистрироваться</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              activeOpacity={0.8}
-              style={{
-                ...styles.registerLink,
-                display: isKeyboardVisible ? "none" : "flex",
-              }}
-              // onPress={}
-            >
-              <Text style={styles.registerLinkTitle}>
-                Уже есть аккаунт? Войти
-              </Text>
-            </TouchableOpacity>
+              <TouchableOpacity
+                activeOpacity={0.8}
+                style={{
+                  ...styles.btn,
+                  display: isKeyboardVisible ? "none" : "flex",
+                }}
+                onPress={formSubmit}
+              >
+                <Text style={styles.btnTitle}>Зарегистрироваться</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                activeOpacity={0.8}
+                style={{
+                  ...styles.registerLink,
+                  display: isKeyboardVisible ? "none" : "flex",
+                }}
+                // onPress={}
+              >
+                <Text style={styles.registerLinkTitle}>
+                  Уже есть аккаунт? Войти
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </ImageBackground>
       </View>
@@ -324,7 +330,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#FF6C00",
     borderColor: "transparent",
     paddingVertical: 10,
-    paddingHorizontal: 32,
+    // paddingHorizontal: 32,
   },
   btnTitle: {
     color: "#ffffff",

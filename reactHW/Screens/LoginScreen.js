@@ -21,9 +21,10 @@ const initialState = {
   password: "",
 };
 
-export default function LoginScreen() {
+export default function RegistrationScreen() {
   // console.log(Platform.OS);
-  const [isShowKeyboard, setIsShowKeyboard] = useState(false);
+  const [isKeyboardVisible, setKeyboardVisible] = useState(false);
+  // const [isShowKeyboard, setIsShowKeyboard] = useState(false);
   const [state, setState] = useState(initialState);
   const [dimensions, setDimensions] = useState(
     Dimensions.get("window").width - 16 * 2
@@ -33,7 +34,7 @@ export default function LoginScreen() {
   );
 
   const [isSecurePassword, setIsSecurePassword] = useState(true);
-  const [loginFocus, setLoginFocus] = useState(false);
+  const [emailFocus, setEmailFocus] = useState(false);
   const [passwordFocus, setPasswordFocus] = useState(false);
 
   const focusInputStyle = (focus) => {
@@ -51,9 +52,28 @@ export default function LoginScreen() {
     const subscription = Dimensions.addEventListener("change", onChange);
     return () => subscription.remove();
   });
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      "keyboardDidShow",
+      () => {
+        setKeyboardVisible(true); // or some other action
+      }
+    );
+    const keyboardDidHideListener = Keyboard.addListener(
+      "keyboardDidHide",
+      () => {
+        setKeyboardVisible(false); // or some other action
+      }
+    );
+
+    return () => {
+      keyboardDidHideListener.remove();
+      keyboardDidShowListener.remove();
+    };
+  }, []);
 
   const keyboardHide = () => {
-    setIsShowKeyboard(false);
+    setKeyboardVisible(false);
     Keyboard.dismiss();
   };
 
@@ -101,37 +121,36 @@ export default function LoginScreen() {
           style={styles.image}
           source={require("../assets/images/Photo_BG.jpg")}
         >
-          <KeyboardAvoidingView
-            behavior={Platform.OS == "ios" ? "padding" : "height"}
+          <View
+            style={{
+              ...styles.formWrapper,
+              width: dimensions + 16 * 2,
+              marginTop: dimensions > dimensionsHeigth ? 100 : 0,
+            }}
           >
-            <View
-              style={{
-                ...styles.formWrapper,
-                width: dimensions + 16 * 2,
-                marginTop: dimensions > dimensionsHeigth ? 190 : 0,
-                // marginBottom: dimensions > dimensionsHeigth ? -150 : 0,
-              }}
+            <KeyboardAvoidingView
+              behavior={Platform.OS == "ios" ? "padding" : "height"}
             >
               <View
                 style={{
-                  // ...styles.form,
-                  marginBottom: isShowKeyboard ? -70 : 170,
+                  // marginBottom: isKeyboardVisible ? -120 : 120,
                   width: dimensions,
                 }}
               >
                 <View style={styles.header}>
                   <Text style={styles.headerTitle}>Войти</Text>
                 </View>
+
                 <View>
                   <TextInput
-                    style={focusInputStyle(loginFocus)}
-                    textAlign={"flex-start"}
+                    style={focusInputStyle(emailFocus)}
+                    textAlign={"center"}
                     placeholder="Адрес электронной почты"
                     onFocus={() => {
-                      setIsShowKeyboard(true), setLoginFocus(true);
+                      setKeyboardVisible(true), setEmailFocus(true);
                     }}
                     onBlur={() => {
-                      setIsShowKeyboard(false), setLoginFocus(false);
+                      setEmailFocus(false);
                     }}
                     value={state.email}
                     onChangeText={(value) =>
@@ -142,17 +161,17 @@ export default function LoginScreen() {
                     }
                   />
                 </View>
-                <View style={{ marginTop: 16 }}>
+                <View style={{ marginTop: 16, marginBottom: 30 }}>
                   <TextInput
                     style={focusInputStyle(passwordFocus)}
-                    textAlign={"flex-start"}
+                    textAlign={"center"}
                     placeholder="Пароль"
                     secureTextEntry={isSecurePassword}
                     onFocus={() => {
-                      setIsShowKeyboard(true), setPasswordFocus(true);
+                      setKeyboardVisible(true), setPasswordFocus(true);
                     }}
                     onBlur={() => {
-                      setIsShowKeyboard(false), setPasswordFocus(false);
+                      setPasswordFocus(false);
                     }}
                     value={state.password}
                     onChangeText={(value) =>
@@ -172,25 +191,37 @@ export default function LoginScreen() {
                     </Text>
                   </TouchableOpacity>
                 </View>
-                <TouchableOpacity
-                  activeOpacity={0.8}
-                  style={styles.btn}
-                  onPress={formSubmit}
-                >
-                  <Text style={styles.btnTitle}>Войти</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  activeOpacity={0.8}
-                  style={styles.registerLink}
-                  // onPress={}
-                >
-                  <Text style={styles.registerLinkTitle}>
-                    Нет аккаунта? Зарегистрироваться
-                  </Text>
-                </TouchableOpacity>
               </View>
+            </KeyboardAvoidingView>
+            <View
+              style={{
+                width: dimensions,
+              }}
+            >
+              <TouchableOpacity
+                activeOpacity={0.8}
+                style={{
+                  ...styles.btn,
+                  display: isKeyboardVisible ? "none" : "flex",
+                }}
+                onPress={formSubmit}
+              >
+                <Text style={styles.btnTitle}>Войти</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                activeOpacity={0.8}
+                style={{
+                  ...styles.registerLink,
+                  display: isKeyboardVisible ? "none" : "flex",
+                }}
+                // onPress={}
+              >
+                <Text style={styles.registerLinkTitle}>
+                  Нет аккаунта? Зарегистрироваться
+                </Text>
+              </TouchableOpacity>
             </View>
-          </KeyboardAvoidingView>
+          </View>
         </ImageBackground>
       </View>
     </TouchableWithoutFeedback>
@@ -208,21 +239,21 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
     alignItems: "center",
   },
+  av: {
+    alignItems: "center",
+  },
+
   formWrapper: {
-    // flex: 1,
     backgroundColor: "#fff",
     alignItems: "center",
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
   },
-  // form: {
-  //   marginHorizontal: 40,
-  // },
+
   input: {
     fontFamily: "Roboto-Regular",
 
     color: "#BDBDBD",
-    // marginBottom: 10,
     fontSize: 16,
     borderWidth: 1,
     borderColor: "#E8E8E8",
@@ -237,13 +268,13 @@ const styles = StyleSheet.create({
     borderRadius: 100,
     borderWidth: 1,
     height: 51,
-    marginTop: 40,
+    marginTop: 10,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#FF6C00",
     borderColor: "transparent",
-    paddingVertical: 16,
-    paddingHorizontal: 32,
+    paddingVertical: 10,
+    // marginHorizontal: 16,
   },
   btnTitle: {
     color: "#ffffff",
@@ -263,6 +294,7 @@ const styles = StyleSheet.create({
   registerLink: {
     alignItems: "center",
     marginTop: 16,
+    marginBottom: 144,
   },
   registerLinkTitle: {
     fontFamily: "Roboto-Regular",
