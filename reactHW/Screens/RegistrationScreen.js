@@ -21,7 +21,6 @@ const initialState = {
   email: "",
   password: "",
 };
-
 export default function RegistrationScreen() {
   // console.log(Platform.OS);
   const [isKeyboardVisible, setKeyboardVisible] = useState(false);
