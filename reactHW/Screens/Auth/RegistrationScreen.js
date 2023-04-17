@@ -17,11 +17,11 @@ import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 
 const initialState = {
+  login: "",
   email: "",
   password: "",
 };
-
-export default function RegistrationScreen() {
+export default function RegistrationScreen({ navigation }) {
   // console.log(Platform.OS);
   const [isKeyboardVisible, setKeyboardVisible] = useState(false);
   // const [isShowKeyboard, setIsShowKeyboard] = useState(false);
@@ -35,6 +35,7 @@ export default function RegistrationScreen() {
 
   const [isSecurePassword, setIsSecurePassword] = useState(true);
   const [emailFocus, setEmailFocus] = useState(false);
+  const [loginFocus, setLoginFocus] = useState(false);
   const [passwordFocus, setPasswordFocus] = useState(false);
 
   const focusInputStyle = (focus) => {
@@ -95,8 +96,8 @@ export default function RegistrationScreen() {
   SplashScreen.preventAutoHideAsync();
 
   const [fontsLoaded] = useFonts({
-    "Roboto-Regular": require("../assets/fonts/Roboto-Regular.ttf"),
-    "Roboto-Medium": require("../assets/fonts/Roboto-Medium.ttf"),
+    "Roboto-Regular": require("../../assets/fonts/Roboto-Regular.ttf"),
+    "Roboto-Medium": require("../../assets/fonts/Roboto-Medium.ttf"),
   });
 
   const onLayoutRootView = useCallback(async () => {
@@ -119,7 +120,7 @@ export default function RegistrationScreen() {
       >
         <ImageBackground
           style={styles.image}
-          source={require("../assets/images/Photo_BG.jpg")}
+          source={require("../../assets/images/Photo_BG.jpg")}
         >
           <View
             style={{
@@ -131,6 +132,18 @@ export default function RegistrationScreen() {
             <KeyboardAvoidingView
               behavior={Platform.OS == "ios" ? "padding" : "height"}
             >
+              <View style={styles.av}>
+                <View style={styles.avatarWrapper}>
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    style={styles.addAvatarBtn}
+                    // onPress={}
+                  >
+                    <Text style={styles.addAvatarBtnTitle}>+</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+
               <View
                 style={{
                   // marginBottom: isKeyboardVisible ? -120 : 120,
@@ -138,10 +151,30 @@ export default function RegistrationScreen() {
                 }}
               >
                 <View style={styles.header}>
-                  <Text style={styles.headerTitle}>Войти</Text>
+                  <Text style={styles.headerTitle}>Регистрация</Text>
+                </View>
+                <View>
+                  <TextInput
+                    style={focusInputStyle(loginFocus)}
+                    textAlign={"center"}
+                    placeholder="Логин"
+                    onFocus={() => {
+                      setKeyboardVisible(true), setLoginFocus(true);
+                    }}
+                    onBlur={() => {
+                      setLoginFocus(false);
+                    }}
+                    value={state.login}
+                    onChangeText={(value) =>
+                      setState((prevState) => ({
+                        ...prevState,
+                        login: value,
+                      }))
+                    }
+                  />
                 </View>
 
-                <View>
+                <View style={{ marginTop: 16 }}>
                   <TextInput
                     style={focusInputStyle(emailFocus)}
                     textAlign={"center"}
@@ -206,7 +239,7 @@ export default function RegistrationScreen() {
                 }}
                 onPress={formSubmit}
               >
-                <Text style={styles.btnTitle}>Войти</Text>
+                <Text style={styles.btnTitle}>Зарегистрироваться</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 activeOpacity={0.8}
@@ -214,10 +247,10 @@ export default function RegistrationScreen() {
                   ...styles.registerLink,
                   display: isKeyboardVisible ? "none" : "flex",
                 }}
-                // onPress={}
+                onPress={() => navigation.navigate("LoginScreen")}
               >
                 <Text style={styles.registerLinkTitle}>
-                  Нет аккаунта? Зарегистрироваться
+                  Уже есть аккаунт? Войти
                 </Text>
               </TouchableOpacity>
             </View>
@@ -242,7 +275,29 @@ const styles = StyleSheet.create({
   av: {
     alignItems: "center",
   },
-
+  avatarWrapper: {
+    width: 120,
+    height: 120,
+    backgroundColor: "#F6F6F6",
+    borderRadius: 16,
+    position: "absolute",
+    top: -60,
+  },
+  addAvatarBtn: {
+    position: "absolute",
+    bottom: 20,
+    right: -12,
+    borderWidth: 1,
+    borderColor: "#FF6C00",
+    borderRadius: 100,
+    width: 25,
+    height: 25,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  addAvatarBtnTitle: {
+    color: "#FF6C00",
+  },
   formWrapper: {
     backgroundColor: "#fff",
     alignItems: "center",
@@ -274,7 +329,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#FF6C00",
     borderColor: "transparent",
     paddingVertical: 10,
-    // marginHorizontal: 16,
+    // paddingHorizontal: 32,
   },
   btnTitle: {
     color: "#ffffff",
@@ -284,7 +339,7 @@ const styles = StyleSheet.create({
   header: {
     alignItems: "center",
     marginBottom: 32,
-    marginTop: 32,
+    marginTop: 92,
   },
   headerTitle: {
     fontFamily: "Roboto-Medium",
@@ -294,7 +349,7 @@ const styles = StyleSheet.create({
   registerLink: {
     alignItems: "center",
     marginTop: 16,
-    marginBottom: 144,
+    marginBottom: 78,
   },
   registerLinkTitle: {
     fontFamily: "Roboto-Regular",
