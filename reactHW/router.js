@@ -1,112 +1,77 @@
-import { Button, TouchableOpacity, Text } from "react-native";
-import { createStackNavigator } from "@react-navigation/stack";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import Icon from "react-native-vector-icons/FontAwesome";
+import { StyleSheet, TouchableOpacity } from "react-native";
+import { RegistrationScreen, LoginScreen } from "./src/Screens/auth";
+import { CommentsScreen, Home, MapScreen } from "./src/Screens/main";
+import { pallete } from "./src/helpers/variables";
 
-import LoginScreen from "./Screens/Auth/LoginScreen";
-import RegistrationScreen from "./Screens/Auth/RegistrationScreen";
-import { PostsScreen } from "./Screens/Home/PostsScreen";
-import { CreatePostsScreen } from "./Screens/Home/CreatePostsScreen";
-import { ProfileScreen } from "./Screens/Home/ProfileScreen";
+const AuthStack = createNativeStackNavigator();
+const HomeStack = createNativeStackNavigator();
+// const Tab = createMaterialBottomTabNavigator();
 
-import { SimpleLineIcons } from "@expo/vector-icons";
-import { Fontisto, Feather, AntDesign } from "@expo/vector-icons";
-
-const AuthStack = createStackNavigator();
-const MainTab = createBottomTabNavigator();
-
-export const useRoute = (isAuth) => {
+export const useRoutes = (isAuth) => {
   if (!isAuth) {
     return (
-      <AuthStack.Navigator
-        initialRouteName="LoginScreen"
-        screenOptions={{
-          headerShown: false,
-        }}
-      >
+      <AuthStack.Navigator initialRouteName="Login">
         <AuthStack.Screen
-          name="RegistrationScreen"
+          name="Register"
           component={RegistrationScreen}
+          options={{ headerShown: false }}
+          // initialParams={{ orientation }}
         />
-        <AuthStack.Screen name="LoginScreen" component={LoginScreen} />
+        <AuthStack.Screen
+          name="Login"
+          component={LoginScreen}
+          options={{ headerShown: false }}
+        />
       </AuthStack.Navigator>
     );
-  }
-  return (
-    <MainTab.Navigator
-      screenOptions={{
-        headerStyle: {
-          borderBottomWidth: 1,
-        },
-        tabBarShowLabel: false,
-        tabBarActiveTintColor: "#fff",
-        tabBarActiveBackgroundColor: "#FF6C00",
-        tabBarStyle: {
-          paddingHorizontal: 80,
-          borderTopWidth: 1,
-        },
-        tabBarItemStyle: {
-          borderRadius: 100,
-          borderWidth: 1,
-          marginTop: 9,
-          borderColor: "transparent",
-        },
-      }}
-    >
-      <MainTab.Screen
-        options={{
-          headerShown: false,
+  } else {
+    return (
+      <HomeStack.Navigator initialRouteName="Home">
+        <HomeStack.Screen
+          name="Home"
+          component={Home}
+          options={{
+            // headerRight: () => LogOut(),
+            headerShown: false,
+          }}
+        />
 
-          tabBarIcon: ({ focused, size, color }) => (
-            <SimpleLineIcons name="grid" size={18} color={color} />
-          ),
-        }}
-        name="PostsScreen"
-        component={PostsScreen}
-      />
-      <MainTab.Screen
-        options={({ navigation: { goBack } }) => ({
-          tabBarIcon: ({ focused, size, color }) => (
-            <Fontisto name="plus-a" size={18} color={color} />
-          ),
-          headerLeft: () => (
-            <TouchableOpacity
-              style={{
-                paddingHorizontal: 20,
-                paddingVertical: 10,
-              }}
-              onPress={() => goBack()}
-            >
-              <AntDesign
-                name="arrowleft"
-                size={24}
-                color={"rgba(33, 33, 33, 0.8)"}
-              />
-            </TouchableOpacity>
-          ),
-          tabBarStyle: {
-            display: "none",
-          },
-        })}
-        name="Создать публикацию"
-        component={CreatePostsScreen}
-      />
-      <MainTab.Screen
-        options={{
-          headerShown: false,
-          tabBarIcon: ({ focused, size, color }) => (
-            <Feather name="user" size={18} color={color} />
-          ),
-          headerRight: () => (
-            <Button
-              onPress={() => alert("This is a button!")}
-              title="Logout"
-              color="red"
-            />
-          ),
-        }}
-        name="ProfileScreen"
-        component={ProfileScreen}
-      />
-    </MainTab.Navigator>
-  );
+        <HomeStack.Screen
+          name="Comments"
+          component={CommentsScreen}
+          options={{ headerTitleAlign: "center" }}
+        />
+        <HomeStack.Screen
+          name="Map"
+          component={MapScreen}
+          options={{ headerTitleAlign: "center" }}
+        />
+      </HomeStack.Navigator>
+    );
+  }
 };
+
+function LogOut() {
+  return (
+    <TouchableOpacity
+      activeOpacity={0.7}
+      style={{
+        marginRight: 16,
+      }}
+      onPress={() => alert("Log out from your acount NEW")}
+    >
+      <Icon name="sign-out" size={24} color={pallete.gray} />
+    </TouchableOpacity>
+  );
+}
+
+const styles = StyleSheet.create({
+  tabBar: {
+    backgroundColor: pallete.white,
+    // paddingBottom: 16,
+    borderTopWidth: 1,
+    borderTopColor: pallete.gray,
+  },
+});
