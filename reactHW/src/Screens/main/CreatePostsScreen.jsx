@@ -16,6 +16,11 @@ import {
 } from "react-native";
 import * as Location from "expo-location";
 import { pallete } from "../../helpers/variables";
+import { savePhotoInStorage } from "../../firebase/operation";
+import { useAuth } from "../../hooks/useAuth";
+import { useDispatch } from "react-redux";
+import { addPost } from "../../redux/posts/postsOperations";
+import { showMessage } from "react-native-flash-message";
 
 const defaultImage = require("../../images/nature-2.jpg");
 
@@ -26,10 +31,14 @@ export function CreatePostsScreen({ navigation }) {
   const [locationName, setLocationName] = useState("");
   const [type, setType] = useState(CameraType.back);
   const [photo, setPhoto] = useState(null);
+  const [loadedPhoto, setLoadedPhoto] = useState(null);
   const [location, setLocation] = useState(null);
   const [inputNameStyle, setInputNameStyle] = useState(styles.input);
   const [inputLocationStyle, setInputLocationStyle] = useState(styles.input);
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const { userName, userId } = useAuth();
+  const dispatch = useDispatch();
 
   useEffect(() => {
     // permission to get access to camera
@@ -81,26 +90,6 @@ export function CreatePostsScreen({ navigation }) {
   const { width, height } = Dimensions.get("window");
   const orientation = "portrait"; // TODO
 
-  // useEffect(() => {
-  //   const keyboardDidShowListener = Keyboard.addListener(
-  //     "keyboardDidShow",
-  //     () => {
-  //       setIsKeyboardOpen(true);
-  //     }
-  //   );
-  //   const keyboardDidHideListener = Keyboard.addListener(
-  //     "keyboardDidHide",
-  //     () => {
-  //       setIsKeyboardOpen(false);
-  //     }
-  //   );
-
-  //   return () => {
-  //     keyboardDidShowListener.remove();
-  //     keyboardDidHideListener.remove();
-  //   };
-  // }, []);
-
   const nameHandler = (text) => setName(text);
   const locationNameHandler = (text) => setLocationName(text);
 
@@ -108,20 +97,50 @@ export function CreatePostsScreen({ navigation }) {
     setName("");
     setLocationName("");
     setPhoto(null);
+    setLoadedPhoto(null);
   };
 
-  const onPublish = () => {
-    const userPost = { name, photo, locationName, location };
+  const onPublish = async () => {
+    const urlPhoto = await savePhotoInStorage(photo);
 
-    navigation.navigate({
-      name: "Posts",
-      params: { userPost },
-      merge: true,
+    // * create post object with all data + urlPhoto with path to fireBase
+    const userPost = {
+      name,
+      photo,
+      loadedPhoto,
+      locationName,
+      location,
+      urlPhoto,
+      commentCounter: 0,
+      likeCounter: 0,
+      userId,
+      dateDocument: Date.now(),
+      userName,
+    };
+
+    // * send post to server
+    dispatch(addPost(userPost));
+
+    showMessage({
+      message: "Your post has been successfully added",
+      type: "success",
     });
+
+    navigation.navigate("Posts");
+
     deleteAndResetPost();
+    setIsCameraOpen(false);
   };
 
-  const isPostData = photo && name;
+  const handleOpenCamera = () => {
+    setIsCameraOpen(true);
+  };
+
+  const downloadPhoto = () => {
+    setIsCameraOpen(false);
+    // setLoadedPhoto(defaultImage);
+    setLoadedPhoto(() => require("../../images/nature-3.jpg"));
+  };
 
   const takePhoto = async () => {
     if (cameraRef) {
@@ -137,61 +156,82 @@ export function CreatePostsScreen({ navigation }) {
     setLocation(coords);
   };
 
-  function toggleCameraType() {
+  const toggleCameraType = () => {
     setType((current) =>
       current === CameraType.back ? CameraType.front : CameraType.back
     );
-  }
+  };
+
+  const isPostData = (photo && name) || (loadedPhoto && name);
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={styles.container}>
         <ScrollView>
-          <Camera
-            style={styles.camera}
-            type={type}
-            ref={(ref) => {
-              setCameraRef(ref);
-            }}
-          >
-            {photo && (
-              <View style={styles.photoWrapper}>
-                <Image
-                  style={styles.photo}
-                  source={{ uri: photo }}
-                  alt="user last photo"
-                />
-              </View>
-            )}
-
-            <TouchableOpacity
-              style={styles.cameraBtn}
-              activeOpacity={0.8}
-              onPress={takePhoto}
+          {isCameraOpen ? (
+            <Camera
+              style={styles.camera}
+              type={type}
+              ref={(ref) => {
+                setCameraRef(ref);
+              }}
             >
-              <Icon name="camera" size={25} color={pallete.gray} />
-            </TouchableOpacity>
+              {photo && (
+                <View style={styles.photoWrapper}>
+                  <Image
+                    style={styles.photo}
+                    source={{ uri: photo }}
+                    alt="user last photo"
+                  />
+                </View>
+              )}
 
-            <View style={styles.btnChangeCameraContainer}>
               <TouchableOpacity
-                style={styles.btnChangeCamera}
-                onPress={toggleCameraType}
+                style={styles.cameraBtn}
+                activeOpacity={0.8}
+                onPress={takePhoto}
               >
-                <Icon name="refresh" size={25} color={pallete.gray} />
+                <Icon name="camera" size={25} color={pallete.gray} />
+              </TouchableOpacity>
+
+              <View style={styles.btnChangeCameraContainer}>
+                <TouchableOpacity
+                  style={styles.btnChangeCamera}
+                  onPress={toggleCameraType}
+                >
+                  <Icon name="refresh" size={25} color={pallete.gray} />
+                </TouchableOpacity>
+              </View>
+            </Camera>
+          ) : (
+            <View style={styles.imgContainer}>
+              <Image
+                style={styles.photo}
+                source={loadedPhoto}
+                alt="user loaded photo"
+              />
+              <TouchableOpacity
+                style={styles.cameraBtn}
+                activeOpacity={0.8}
+                onPress={handleOpenCamera}
+              >
+                <Icon name="camera" size={25} color={pallete.gray} />
               </TouchableOpacity>
             </View>
-          </Camera>
+          )}
 
-          <TouchableOpacity activeOpacity={0.6} onPress={() => setPhoto(null)}>
-            <Text style={styles.editBtn}>Edit photo</Text>
-          </TouchableOpacity>
-
-          {/* <TouchableOpacity
-            activeOpacity={0.6}
-            onPress={() => setPhoto(defaultImage)}
-          >
-            <Text style={styles.editBtn}>Add photo</Text>
-          </TouchableOpacity> */}
+          {loadedPhoto ? (
+            <TouchableOpacity
+              activeOpacity={0.6}
+              onPress={() => setLoadedPhoto(null)}
+            >
+              <Text style={styles.editBtn}>Edit photo</Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity activeOpacity={0.6} onPress={downloadPhoto}>
+              <Text style={styles.editBtn}>Download photo</Text>
+            </TouchableOpacity>
+          )}
 
           <KeyboardAvoidingView
             behavior={Platform.OS == "ios" ? "padding" : "height"}
@@ -275,10 +315,19 @@ const styles = StyleSheet.create({
     paddingLeft: 16,
     paddingRight: 16,
   },
+  imgContainer: {
+    position: "relative",
+    marginBottom: 8,
+    height: 250,
+    backgroundColor: pallete.gray,
+    borderRadius: 16,
+    overflow: "hidden",
+  },
   camera: {
     position: "relative",
+    marginBottom: 8,
     height: 250,
-    backgroundColor: pallete.black,
+    backgroundColor: pallete.gray,
     borderRadius: 16,
     overflow: "hidden",
   },

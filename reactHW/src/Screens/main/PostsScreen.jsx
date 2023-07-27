@@ -1,20 +1,21 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { View, Text, StyleSheet, Image, FlatList } from "react-native";
 import { pallete } from "../../helpers/variables";
-import { testDB } from "../../helpers/testDB";
 import { PostItemAddPost } from "../../components/PostItemAddPost";
+import { useAuth } from "../../hooks/useAuth";
+import { usePosts } from "../../hooks/usePosts";
+import { useDispatch } from "react-redux";
+import { getAllPosts } from "../../redux/posts/postsOperations";
 
-export function PostsScreen({ navigation, route }) {
-  const [posts, setPosts] = useState([]);
+export function PostsScreen({ navigation }) {
+  const { userName, userEmail, userId } = useAuth();
+  const { allPosts } = usePosts();
+
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    if (route.params?.userPost) {
-      // Post updated, do something with `route.params.post`
-      // For example, send the post to the server
-      const { userPost } = route.params;
-      setPosts((prevState) => [...prevState, userPost]);
-    }
-  }, [route.params?.userPost]);
+    dispatch(getAllPosts());
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -25,17 +26,17 @@ export function PostsScreen({ navigation, route }) {
           alt="user avatar"
         />
         <View>
-          <Text style={styles.userName}>Natali Romanova</Text>
-          <Text style={styles.userEmail}>example@mail.com</Text>
+          <Text style={styles.userName}>{userName}</Text>
+          <Text style={styles.userEmail}>{userEmail}</Text>
         </View>
       </View>
 
       <FlatList
-        data={posts}
+        data={allPosts}
         renderItem={({ item }) => (
           <PostItemAddPost postData={item} navigation={navigation} />
         )}
-        keyExtractor={(_, idx) => idx.toString()}
+        keyExtractor={(item) => item.documentId}
       />
     </View>
   );
